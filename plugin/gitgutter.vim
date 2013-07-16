@@ -472,35 +472,51 @@ endfunction
 command GitGutterLineHighlightsToggle call GitGutterLineHighlightsToggle()
 
 function! GitGutterNextHunk(count)
-  if s:is_active()
-    let current_line = line('.')
-    let hunk_count = 0
-    for hunk in s:hunks
-      if hunk[2] > current_line
-        let hunk_count += 1
-        if hunk_count == a:count
-          execute 'normal!' hunk[2] . 'G'
-          break
-        endif
-      endif
-    endfor
+  if ! s:is_active()
+    return
   endif
+  let current_line = line('.')
+  let hunk_count = 0
+  for hunk in s:hunks
+    if hunk[2] > current_line
+      let hunk_count += 1
+      if hunk_count == a:count
+        execute 'normal!' hunk[2] . 'G'
+        return
+        break
+      endif
+    endif
+  endfor
+  let hunks_len = len(s:hunks)
+  if  hunks_len != 0
+      execute 'normal!' s:hunks[ count % hunks_len ][2] . 'G'
+      return
+  endif
+
 endfunction
 command -count=1 GitGutterNextHunk call GitGutterNextHunk(<count>)
 
 function! GitGutterPrevHunk(count)
-  if s:is_active()
-    let current_line = line('.')
-    let hunk_count = 0
-    for hunk in reverse(copy(s:hunks))
-      if hunk[2] < current_line
-        let hunk_count += 1
-        if hunk_count == a:count
-          execute 'normal!' hunk[2] . 'G'
-          break
-        endif
+  if ! s:is_active()
+    return
+  endif
+  let current_line = line('.')
+  let hunk_count = 0
+  for hunk in reverse(copy(s:hunks))
+    if hunk[2] < current_line
+      let hunk_count += 1
+      if hunk_count == a:count
+        execute 'normal!' hunk[2] . 'G'
+        return
+        break
       endif
-    endfor
+    endif
+  endfor
+  let hunks_len = len(s:hunks)
+  if  hunks_len != 0
+    let neg_count = hunks_len - ( count + 1 )
+    execute 'normal!' s:hunks[ neg_count % hunks_len ][2] . 'G'
+    return
   endif
 endfunction
 command -count=1 GitGutterPrevHunk call GitGutterPrevHunk(<count>)
